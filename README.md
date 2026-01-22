@@ -12,6 +12,15 @@ Built with a focus on simplicity, responsiveness, and real-time user interaction
 
 The **Smart Fitness Tracking System** is designed to provide a 360° view of personal health by combining exercise tracking, nutrition logging, visual progress analytics, and personalized user profiles. It serves as an all-in-one companion for students, fitness enthusiasts, and anyone pursuing sustainable lifestyle changes.
 
+## 📸 Screenshots
+
+| Dashboard | Fitness | Diet |
+|:----:|:-----:|:-------:|
+| ![Dashboard](assets/Dashboard.png) | ![Fitness](assets/Fitness.png) | ![Diet](assets/Diet.png) |
+
+| Progress | Profile | Login  |
+|:------:|:-------:|:------:|
+| ![Progress](assets/Progress.png) | ![Profile](assets/Profile.png) | ![Login](assets/Login.png) |
 ### Core Modules
 - **Fitness Module** — Log workouts (strength, cardio, flexibility), track activity (duration, reps, calories burned), view daily summaries.
 - **Diet Module** — Record meals, track calories/macros/nutrients, get basic intake insights.
