@@ -18,10 +18,17 @@
     <a href="diet.html">Diet</a>
     <a href="progress.html">Progress</a>
     <a href="profile.html">Profile</a>
+    <a href="#" onclick="logout()">Logout</a>
+
 </nav>
 
 
     <main class="container">
+        <div class="card">
+    <h2>Welcome</h2>
+    <p id="userInfo"></p>
+    </div>
+
         <div class="card">
             <h2>🏃 Fitness Tracking</h2>
             <p>Track workouts, steps, and calories burned.</p>
@@ -48,6 +55,10 @@
     <script>
     checkLogin();
     </script>
+<script>
+    checkLogin();
+    showDashboardProfile();
+</script>
 
 </body>
 </html>

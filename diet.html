@@ -17,6 +17,8 @@
     <a href="diet.html">Diet</a>
     <a href="progress.html">Progress</a>
     <a href="profile.html">Profile</a>
+    <a href="#" onclick="logout()">Logout</a>
+
 </nav>
 
 
@@ -30,6 +32,14 @@
         <h2>Calorie Intake</h2>
         <p>Monitor daily calorie consumption.</p>
     </div>
+    <div class="card">
+    <h2>Diet Entry</h2>
+    <input type="text" id="meal" placeholder="Meal Name"><br><br>
+    <input type="number" id="caloriesIntake" placeholder="Calories Intake"><br><br>
+    <button onclick="saveDiet()">Save</button>
+    <p id="dietMsg"></p>
+</div>
+
 </main>
 
 <footer class="footer">

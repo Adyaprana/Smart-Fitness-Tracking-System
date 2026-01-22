@@ -17,6 +17,8 @@
     <a href="diet.html">Diet</a>
     <a href="progress.html">Progress</a>
     <a href="profile.html">Profile</a>
+    <a href="#" onclick="logout()">Logout</a>
+
 </nav>
 
 
@@ -30,6 +32,14 @@
         <h2>Calories Burned</h2>
         <p>Monitor calories burned from activities.</p>
     </div>
+    <div class="card">
+    <h2>Workout Entry</h2>
+    <input type="text" id="workout" placeholder="Workout Type"><br><br>
+    <input type="number" id="caloriesBurned" placeholder="Calories Burned"><br><br>
+    <button onclick="saveFitness()">Save</button>
+    <p id="fitMsg"></p>
+</div>
+
 </main>
 
 <footer class="footer">
