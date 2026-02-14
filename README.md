@@ -21,6 +21,9 @@ The **Smart Fitness Tracking System** is designed to provide a 360° view of per
 | Progress | Profile | Login  |
 |:------:|:-------:|:------:|
 | ![Progress](static/assets/Progress.png) | ![Profile](static/assets/Profile.png) | ![Login](static/assets/Login.png) |
+| In Mobile Phone  |
+|:------:|:-------:|:------:|
+| ![Progress](static/assets/mob-1.png) | ![Profile](static/assets/mob-2.png) | ![Login](static/assets/mob-3.png) |
 ### Core Modules
 - **Fitness Module** — Log workouts (strength, cardio, flexibility), track activity (duration, reps, calories burned), view daily summaries.
 - **Diet Module** — Record meals, track calories/macros/nutrients, get basic intake insights.
