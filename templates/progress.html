@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Progress - Smart Fitness Tracker{% endblock %}
+
+{% block content %}
+<div class="progress-container">
+    <div class="page-header">
+        <h2>Progress Tracking</h2>
+    </div>
+    
+    <div class="charts-grid">
+        <div class="chart-card">
+            <h3>Weight Trend (Last 7 Days)</h3>
+            <canvas id="weightChart"></canvas>
+        </div>
+        
+        <div class="chart-card">
+            <h3>BMI Trend (Last 7 Days)</h3>
+            <canvas id="bmiChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="chart-card full-width">
+        <h3>Calories: Intake vs Burned (Last 7 Days)</h3>
+        <canvas id="caloriesChart"></canvas>
+    </div>
+    
+    <div class="progress-table">
+        <h3>Detailed Progress</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Weight (kg)</th>
+                        <th>BMI</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="progressTableBody">
+                    <tr>
+                        <td colspan="4" class="no-data">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    let weightChart, bmiChart, caloriesChart;
+
+    Chart.defaults.color = '#6c6c74';
+    Chart.defaults.borderColor = '#27282c';
+    Chart.defaults.font.family = "'DM Sans', -apple-system, sans-serif";
+    Chart.defaults.font.size = 12;
+
+    async function loadProgressData() {
+        try {
+            const response = await fetch('/api/progress-data');
+            const progressData = await response.json();
+            
+            if (progressData.length === 0) {
+                document.getElementById('progressTableBody').innerHTML = 
+                    '<tr><td colspan="4" class="no-data">No progress data available</td></tr>';
+                return;
+            }
+            
+            // Update progress table
+            const tableBody = document.getElementById('progressTableBody');
+            tableBody.innerHTML = progressData.map((item, index) => {
+                let status = 'On Track';
+                if (index > 0) {
+                    const prevWeight = parseFloat(progressData[index - 1].weight);
+                    const currWeight = parseFloat(item.weight);
+                    if (currWeight < prevWeight) {
+                        status = '📉 Loss';
+                    } else if (currWeight > prevWeight) {
+                        status = '📈 Gain';
+                    }
+                }
+                return `<tr>
+                    <td>${new Date(item.date).toLocaleDateString()}</td>
+                    <td>${parseFloat(item.weight).toFixed(1)}</td>
+                    <td>${parseFloat(item.bmi).toFixed(1)}</td>
+                    <td>${status}</td>
+                </tr>`;
+            }).join('');
+            
+            // Prepare chart data
+            const dates = progressData.map(d => new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            const weights = progressData.map(d => parseFloat(d.weight));
+            const bmis = progressData.map(d => parseFloat(d.bmi));
+            
+            // Update weight chart
+            if (weightChart) {
+                weightChart.data.labels = dates;
+                weightChart.data.datasets[0].data = weights;
+                weightChart.update();
+            } else {
+                const ctx = document.getElementById('weightChart').getContext('2d');
+                weightChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: [{
+                            label: 'Weight (kg)',
+                            data: weights,
+                            borderColor: '#8a9589',
+                            backgroundColor: 'rgba(111, 125, 110, 0.12)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Update BMI chart
+            if (bmiChart) {
+                bmiChart.data.labels = dates;
+                bmiChart.data.datasets[0].data = bmis;
+                bmiChart.update();
+            } else {
+                const ctx = document.getElementById('bmiChart').getContext('2d');
+                bmiChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: [{
+                            label: 'BMI',
+                            data: bmis,
+                            borderColor: '#7d8b7a',
+                            backgroundColor: 'rgba(111, 125, 110, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Load calories data for the past 7 days
+            const last7Dates = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                last7Dates.push(d.toISOString().split('T')[0]);
+            }
+            
+            const intakeData = await Promise.all(last7Dates.map(async (date) => {
+                const resp = await fetch(`/api/diet-logs?date=${date}`);
+                const logs = await resp.json();
+                return logs.reduce((sum, log) => sum + log.calories, 0);
+            }));
+            
+            const burnedData = await Promise.all(last7Dates.map(async (date) => {
+                const resp = await fetch(`/api/fitness-logs?date=${date}`);
+                const logs = await resp.json();
+                return logs.reduce((sum, log) => sum + log.calories_burned, 0);
+            }));
+            
+            const chartDates = last7Dates.map(d => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            
+            // Update calories chart
+            if (caloriesChart) {
+                caloriesChart.data.labels = chartDates;
+                caloriesChart.data.datasets[0].data = intakeData;
+                caloriesChart.data.datasets[1].data = burnedData;
+                caloriesChart.update();
+            } else {
+                const ctx = document.getElementById('caloriesChart').getContext('2d');
+                caloriesChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: chartDates,
+                        datasets: [
+                            {
+                                label: 'Calories Intake',
+                                data: intakeData,
+                                backgroundColor: 'rgba(111, 125, 110, 0.5)',
+                                borderColor: '#6f7d6e'
+                            },
+                            {
+                                label: 'Calories Burned',
+                                data: burnedData,
+                                backgroundColor: 'rgba(139, 107, 107, 0.4)',
+                                borderColor: '#8b6b6b'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error loading progress data:', error);
+        }
+    }
+    
+    // Load progress data on page load
+    loadProgressData();
+    
+    // Reload every 30 seconds
+    setInterval(loadProgressData, 30000);
+</script>
+{% endblock %}

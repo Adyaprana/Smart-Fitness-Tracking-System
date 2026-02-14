@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Smart Fitness Tracker{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="page-header">
+        <h2>My Profile</h2>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-card-top">
+            <div class="profile-card-main">
+                <div class="profile-avatar">
+                    <span id="profileInitial">U</span>
+                </div>
+                <div class="profile-heading">
+                    <div class="profile-title" id="profileDisplayName">Your profile</div>
+                    <p class="profile-subtitle">
+                        Keep your body data precise so insights stay calm and accurate.
+                    </p>
+                </div>
+            </div>
+            <div class="profile-badge" id="profileGoalBadge">
+                Goal: Maintenance
+            </div>
+        </div>
+
+        <div class="profile-divider"></div>
+
+        <form id="profileForm" class="profile-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        readonly>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="age">Age</label>
+                    <input 
+                        type="number" 
+                        id="age" 
+                        min="1"
+                        max="120">
+                </div>
+                
+                <div class="form-group">
+                    <label for="gender">Gender</label>
+                    <select id="gender">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="height">Height (cm)</label>
+                    <input 
+                        type="number" 
+                        id="height" 
+                        min="50"
+                        max="300"
+                        step="0.1">
+                </div>
+                
+                <div class="form-group">
+                    <label for="weight">Weight (kg)</label>
+                    <input 
+                        type="number" 
+                        id="weight" 
+                        min="20"
+                        max="300"
+                        step="0.1">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group full-width">
+                    <label for="goal">Fitness Goal</label>
+                    <select id="goal">
+                        <option value="fat loss">Fat Loss</option>
+                        <option value="muscle gain">Muscle Gain</option>
+                        <option value="maintenance">Maintenance</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <div id="profileMessage" class="message" style="display: none;"></div>
+        </form>
+    </div>
+</div>
+
+<script>
+    async function loadProfile() {
+        try {
+            const response = await fetch('/api/user-profile');
+            const data = await response.json();
+            
+            document.getElementById('username').value = data.username;
+            document.getElementById('age').value = data.age || '';
+            document.getElementById('gender').value = data.gender || 'Male';
+            document.getElementById('height').value = data.height || '';
+            document.getElementById('weight').value = data.weight || '';
+            document.getElementById('goal').value = data.goal || 'maintenance';
+
+            const displayNameEl = document.getElementById('profileDisplayName');
+            const initialEl = document.getElementById('profileInitial');
+            const goalBadgeEl = document.getElementById('profileGoalBadge');
+
+            if (displayNameEl && data.username) {
+                displayNameEl.textContent = data.username;
+            }
+
+            if (initialEl && data.username) {
+                initialEl.textContent = data.username.charAt(0).toUpperCase();
+            }
+
+            if (goalBadgeEl) {
+                const goalRaw = data.goal || 'maintenance';
+                const goalLabel = goalRaw.charAt(0).toUpperCase() + goalRaw.slice(1);
+                goalBadgeEl.textContent = `Goal: ${goalLabel}`;
+            }
+        } catch (error) {
+            console.error('Error loading profile:', error);
+        }
+    }
+    
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const message = document.getElementById('profileMessage');
+        
+        try {
+            const response = await fetch('/api/update-profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    age: parseInt(document.getElementById('age').value) || null,
+                    gender: document.getElementById('gender').value,
+                    height: parseFloat(document.getElementById('height').value) || null,
+                    weight: parseFloat(document.getElementById('weight').value) || null,
+                    goal: document.getElementById('goal').value
+                })
+            });
+            
+            if (response.ok) {
+                message.textContent = '✓ Profile updated successfully!';
+                message.className = 'message success';
+                message.style.display = 'block';
+                
+                setTimeout(() => {
+                    message.style.display = 'none';
+                }, 3000);
+            }
+        } catch (error) {
+            message.textContent = 'Error updating profile';
+            message.className = 'message error';
+            message.style.display = 'block';
+            console.error('Error updating profile:', error);
+        }
+    });
+    
+    // Load profile on page load
+    loadProfile();
+</script>
+{% endblock %}

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Smart Fitness Tracker{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    {% if session.get('user_id') %}
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1>Smart Fitness</h1>
+                <span class="nav-tagline">Track. Analyze. Improve.</span>
+            </div>
+            <div class="nav-right">
+                <button type="button" class="theme-toggle" data-theme-toggle>
+                    <span class="theme-toggle-icon" data-theme-toggle-icon>🌙</span>
+                    <span class="theme-toggle-label" data-theme-toggle-label>Dark</span>
+                </button>
+                <button type="button" class="nav-toggle" id="navToggle" aria-label="Open navigation">
+                    <span class="nav-toggle-dot"></span>
+                    <span class="nav-toggle-dot"></span>
+                    <span class="nav-toggle-dot"></span>
+                </button>
+                <ul class="nav-menu">
+                    <li><a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}is-active{% endif %}">Dashboard</a></li>
+                    <li><a href="{{ url_for('diet') }}" class="nav-link {% if request.endpoint == 'diet' %}is-active{% endif %}">Diet Plan</a></li>
+                    <li><a href="{{ url_for('fitness') }}" class="nav-link {% if request.endpoint == 'fitness' %}is-active{% endif %}">Fitness</a></li>
+                    <li><a href="{{ url_for('progress') }}" class="nav-link {% if request.endpoint == 'progress' %}is-active{% endif %}">Progress</a></li>
+                    <li><a href="{{ url_for('profile') }}" class="nav-link {% if request.endpoint == 'profile' %}is-active{% endif %}">Profile</a></li>
+                    <li><a href="{{ url_for('logout') }}" class="nav-link logout">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="mobile-nav" id="mobileNav">
+        <div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
+        <div class="mobile-nav-panel">
+            <div class="mobile-nav-header">
+                <div class="mobile-nav-brand">
+                    <span class="mobile-nav-logo">Smart Fitness</span>
+                    <span class="mobile-nav-tagline">Track. Analyze. Improve.</span>
+                </div>
+                <button type="button" class="mobile-nav-close" id="mobileNavClose" aria-label="Close navigation">✕</button>
+            </div>
+            <div class="mobile-nav-body">
+                <ul class="mobile-nav-links">
+                    <li>
+                        <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}is-active{% endif %}">
+                            <span>Dashboard</span>
+                            <small>Today at a glance</small>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('diet') }}" class="{% if request.endpoint == 'diet' %}is-active{% endif %}">
+                            <span>Diet</span>
+                            <small>Log meals & macros</small>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('fitness') }}" class="{% if request.endpoint == 'fitness' %}is-active{% endif %}">
+                            <span>Fitness</span>
+                            <small>Track activity</small>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('progress') }}" class="{% if request.endpoint == 'progress' %}is-active{% endif %}">
+                            <span>Progress</span>
+                            <small>Trends & insights</small>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('profile') }}" class="{% if request.endpoint == 'profile' %}is-active{% endif %}">
+                            <span>Profile</span>
+                            <small>Body data & goals</small>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('logout') }}">
+                            <span>Logout</span>
+                            <small>End session</small>
+                        </a>
+                    </li>
+                </ul>
+                <button type="button" class="theme-toggle theme-toggle-mobile" data-theme-toggle>
+                    <span class="theme-toggle-icon" data-theme-toggle-icon>🌙</span>
+                    <span class="theme-toggle-label" data-theme-toggle-label>Dark mode</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+    
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    {% if session.get('user_id') %}
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <span class="footer-logo">Smart Fitness</span>
+                <span class="footer-tagline">Track. Analyze. Improve.</span>
+            </div>
+            <nav class="footer-nav">
+                <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('diet') }}">Diet Plan</a>
+                <a href="{{ url_for('fitness') }}">Fitness</a>
+                <a href="{{ url_for('progress') }}">Progress</a>
+                <a href="{{ url_for('profile') }}">Profile</a>
+                <a href="{{ url_for('logout') }}">Log Out</a>
+            </nav>
+            <p class="footer-copy">&copy; 2026 Smart Fitness. All rights reserved.</p>
+        </div>
+    </footer>
+    {% endif %}
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

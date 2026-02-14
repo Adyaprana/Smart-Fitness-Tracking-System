@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Smart Fitness{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div class="dashboard-header-top">
+            <span id="datePill" class="date-pill"></span>
+            <div class="dashboard-actions">
+                <a href="{{ url_for('progress') }}" class="btn btn-secondary btn-compact">Analytics</a>
+                <a href="{{ url_for('diet') }}" class="btn btn-primary btn-compact">Record Data</a>
+            </div>
+        </div>
+        <h1 class="dashboard-greeting">Good day, <span id="userName">...</span></h1>
+        <p id="statusMessage" class="dashboard-status">Your metrics are loading.</p>
+    </div>
+
+    <div class="dashboard-metrics">
+        <div class="metric-card">
+            <div class="metric-card-icon metric-icon-fuel">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M8 10v12"/><path d="M6 22h4"/><path d="M5 8h6"/><path d="M4 4h2"/><path d="M8 4h2"/><path d="M12 4h2"/><path d="M16 2v6l4 12h-2l-2-8-2 8h-2L16 8V2z"/></svg>
+            </div>
+            <p class="metric-label">Consistently Fueled</p>
+            <p class="metric-value" id="caloriesIntake">0</p>
+            <p class="metric-unit">calories</p>
+        </div>
+        <div class="metric-card">
+            <div class="metric-card-icon metric-icon-energy">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+            </div>
+            <p class="metric-label">Active Energy</p>
+            <p class="metric-value" id="caloriesBurned">0</p>
+            <p class="metric-unit">burned</p>
+        </div>
+        <div class="metric-card">
+            <div class="metric-card-icon metric-icon-balance">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <p class="metric-label">Energy Balance</p>
+            <p class="metric-value" id="netCalories">0</p>
+            <p class="metric-unit">net</p>
+        </div>
+        <div class="metric-card">
+            <div class="metric-card-icon metric-icon-composition">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4"/><path d="M12 17v4"/><path d="M5 9l3 3-3 3"/><path d="M19 9l-3 3 3 3"/><path d="M3 12h18"/><path d="M8 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M16 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
+            </div>
+            <p class="metric-label">Composition</p>
+            <p class="metric-value" id="currentBmi">0</p>
+            <p class="metric-unit">bmi</p>
+        </div>
+    </div>
+
+    <div class="dashboard-charts-row">
+        <div class="dashboard-chart-card">
+            <div class="chart-card-head">
+                <div>
+                    <h3 class="chart-card-title">Intake Rhythm</h3>
+                    <p class="chart-card-subtitle">Weekly caloric distribution</p>
+                </div>
+                <span class="chart-card-badge">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                </span>
+            </div>
+            <div class="chart-wrap">
+                <canvas id="intakeRhythmChart"></canvas>
+            </div>
+        </div>
+        <div class="dashboard-chart-card">
+            <div class="chart-card-head">
+                <div>
+                    <h3 class="chart-card-title">Balance</h3>
+                    <p class="chart-card-subtitle">Macro equilibrium</p>
+                </div>
+            </div>
+            <div class="balance-content">
+                <div class="balance-donut-wrap">
+                    <canvas id="balanceDonutChart"></canvas>
+                    <div class="balance-donut-center">
+                        <span class="balance-total" id="balanceTotal">0</span>
+                        <span class="balance-total-label">total kcal</span>
+                    </div>
+                </div>
+                <ul class="balance-macros" id="balanceMacros">
+                    <li><span class="macro-dot macro-protein"></span>Protein: <strong id="macroProtein">0</strong>g</li>
+                    <li><span class="macro-dot macro-carbs"></span>Carbs: <strong id="macroCarbs">0</strong>g</li>
+                    <li><span class="macro-dot macro-fat"></span>Fat: <strong id="macroFat">0</strong>g</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-quick">
+        <div class="quick-actions-inline">
+            <a href="{{ url_for('diet') }}" class="btn btn-secondary">+ Log Diet</a>
+            <a href="{{ url_for('fitness') }}" class="btn btn-secondary">+ Log Fitness</a>
+            <a href="{{ url_for('progress') }}" class="btn btn-secondary">View Progress</a>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    let intakeChart, balanceChart;
+
+    function formatDatePill() {
+        const d = new Date();
+        const months = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+        const day = d.getDate();
+        const suffix = day === 1 || day === 21 || day === 31 ? 'ST' : day === 2 || day === 22 ? 'ND' : day === 3 || day === 23 ? 'RD' : 'TH';
+        return months[d.getMonth()] + ' ' + day + suffix + ', ' + d.getFullYear();
+    }
+
+    function setStatus(intake, burned, goal) {
+        const el = document.getElementById('statusMessage');
+        if (intake === 0 && burned === 0) {
+            el.textContent = 'Log your first meal or workout to see your metrics here.';
+            return;
+        }
+        const net = intake - burned;
+        if (net > 0) el.textContent = 'You\'re in a slight surplus today. Consider a short walk or light activity.';
+        else if (net < 0) el.textContent = 'You\'re in a deficit today. Stay hydrated and fuel well.';
+        else el.textContent = 'Your metrics are balanced. You\'re maintaining a healthy rhythm today.';
+    }
+
+    async function loadDashboardData() {
+        try {
+            const response = await fetch('/api/dashboard-data');
+            const data = await response.json();
+
+            document.getElementById('datePill').textContent = formatDatePill();
+            document.getElementById('userName').textContent = data.username || 'there';
+            document.getElementById('caloriesIntake').textContent = Math.round(data.calories_intake);
+            document.getElementById('caloriesBurned').textContent = Math.round(data.calories_burned);
+            document.getElementById('netCalories').textContent = Math.round((data.calories_intake || 0) - (data.calories_burned || 0));
+            document.getElementById('currentBmi').textContent = data.bmi.toFixed(1);
+            document.getElementById('balanceTotal').textContent = Math.round(data.calories_intake);
+            document.getElementById('macroProtein').textContent = Math.round(data.protein || 0);
+            document.getElementById('macroCarbs').textContent = Math.round(data.carbs || 0);
+            document.getElementById('macroFat').textContent = Math.round(data.fats || 0);
+
+            setStatus(data.calories_intake, data.calories_burned, data.goal);
+
+            const days = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                days.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
+            }
+
+            if (intakeChart) {
+                intakeChart.data.labels = days;
+                intakeChart.data.datasets[0].data = data.weekly_intake || [0,0,0,0,0,0,0];
+                intakeChart.update();
+            } else {
+                const ctx = document.getElementById('intakeRhythmChart').getContext('2d');
+                intakeChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: days,
+                        datasets: [{
+                            label: 'Calories',
+                            data: data.weekly_intake || [0,0,0,0,0,0,0],
+                            borderColor: '#8a9589',
+                            backgroundColor: 'rgba(111, 125, 110, 0.12)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#6c6c74' } },
+                            x: { grid: { display: false }, ticks: { color: '#6c6c74' } }
+                        }
+                    }
+                });
+            }
+
+            const totalMacro = (data.protein || 0) * 4 + (data.carbs || 0) * 4 + (data.fats || 0) * 9;
+            const p = totalMacro ? ((data.protein || 0) * 4 / totalMacro) * 100 : 33.33;
+            const c = totalMacro ? ((data.carbs || 0) * 4 / totalMacro) * 100 : 33.33;
+            const f = totalMacro ? ((data.fats || 0) * 9 / totalMacro) * 100 : 33.34;
+
+            if (balanceChart) {
+                balanceChart.data.datasets[0].data = [p, c, f];
+                balanceChart.update();
+            } else {
+                const ctx2 = document.getElementById('balanceDonutChart').getContext('2d');
+                balanceChart = new Chart(ctx2, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Protein', 'Carbs', 'Fat'],
+                        datasets: [{
+                            data: [p, c, f],
+                            backgroundColor: ['#6f7d6e', '#8a9589', '#52525a'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        } catch (e) {
+            console.error('Error loading dashboard:', e);
+        }
+    }
+
+    document.getElementById('datePill').textContent = formatDatePill();
+    loadDashboardData();
+    setInterval(loadDashboardData, 30000);
+})();
+</script>
+{% endblock %}

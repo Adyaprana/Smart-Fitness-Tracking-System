@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+
+{% block title %}Diet - Smart Fitness Tracker{% endblock %}
+
+{% block content %}
+<div class="diet-container">
+    <div class="page-header">
+        <h2>Diet Tracking</h2>
+    </div>
+    
+    <div class="diet-grid">
+        <div class="diet-form-section add-food-side">
+            <h3>Add Food</h3>
+            <div class="form-group search-wrapper">
+                <label for="foodSearch">Search USDA food database</label>
+                <input 
+                    type="text" 
+                    id="foodSearch" 
+                    placeholder="e.g. Banana, Chicken Breast"
+                    autocomplete="off">
+                <div id="foodDropdown" class="dropdown-menu dropdown-in-add-food" style="display: none;"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="mealType">Meal Type</label>
+                <select id="mealType">
+                    <option value="Breakfast">Breakfast</option>
+                    <option value="Lunch">Lunch</option>
+                    <option value="Dinner">Dinner</option>
+                    <option value="Snack">Snack</option>
+                </select>
+            </div>
+            
+            <div id="selectedFood" class="selected-food" style="display: none;">
+                <h4 id="selectedFoodName"></h4>
+                <div class="nutrition-grid">
+                    <div><span>Calories:</span> <strong id="selectedCalories">0</strong></div>
+                    <div><span>Protein:</span> <strong id="selectedProtein">0</strong>g</div>
+                    <div><span>Carbs:</span> <strong id="selectedCarbs">0</strong>g</div>
+                    <div><span>Fat:</span> <strong id="selectedFat">0</strong>g</div>
+                </div>
+                <button type="button" id="addFoodBtn" class="btn btn-primary">Add to Diet</button>
+            </div>
+        </div>
+        
+        <div class="diet-logs-section">
+            <h3>Today's Logs</h3>
+            <div class="today-summary-cards">
+                <div class="summary-card summary-calories">
+                    <span class="summary-label">Total Calories</span>
+                    <strong class="summary-value" id="totalCalories">0</strong>
+                    <span class="summary-unit">kcal</span>
+                </div>
+                <div class="summary-card summary-protein">
+                    <span class="summary-label">Protein</span>
+                    <strong class="summary-value" id="totalProtein">0</strong>
+                    <span class="summary-unit">g</span>
+                </div>
+                <div class="summary-card summary-carbs">
+                    <span class="summary-label">Carbs</span>
+                    <strong class="summary-value" id="totalCarbs">0</strong>
+                    <span class="summary-unit">g</span>
+                </div>
+                <div class="summary-card summary-fat">
+                    <span class="summary-label">Fat</span>
+                    <strong class="summary-value" id="totalFat">0</strong>
+                    <span class="summary-unit">g</span>
+                </div>
+            </div>
+            
+            <div class="meal-boxes-grid">
+                <div class="meal-box" data-meal="Breakfast">
+                    <div class="meal-box-header">
+                        <span class="meal-box-icon">☕</span>
+                        <span class="meal-box-title">Breakfast</span>
+                        <span class="meal-box-total" id="breakfastTotal">0 kcal</span>
+                    </div>
+                    <div class="meal-box-list" id="breakfastList">
+                        <p class="no-data">No food logged</p>
+                    </div>
+                </div>
+                <div class="meal-box" data-meal="Lunch">
+                    <div class="meal-box-header">
+                        <span class="meal-box-icon">☀</span>
+                        <span class="meal-box-title">Lunch</span>
+                        <span class="meal-box-total" id="lunchTotal">0 kcal</span>
+                    </div>
+                    <div class="meal-box-list" id="lunchList">
+                        <p class="no-data">No food logged</p>
+                    </div>
+                </div>
+                <div class="meal-box" data-meal="Dinner">
+                    <div class="meal-box-header">
+                        <span class="meal-box-icon">🌙</span>
+                        <span class="meal-box-title">Dinner</span>
+                        <span class="meal-box-total" id="dinnerTotal">0 kcal</span>
+                    </div>
+                    <div class="meal-box-list" id="dinnerList">
+                        <p class="no-data">No food logged</p>
+                    </div>
+                </div>
+                <div class="meal-box" data-meal="Snack">
+                    <div class="meal-box-header">
+                        <span class="meal-box-icon">🍪</span>
+                        <span class="meal-box-title">Snack</span>
+                        <span class="meal-box-total" id="snackTotal">0 kcal</span>
+                    </div>
+                    <div class="meal-box-list" id="snackList">
+                        <p class="no-data">No food logged</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let selectedFood = null;
+    
+    // Food search
+    document.getElementById('foodSearch').addEventListener('input', async (e) => {
+        const query = e.target.value.trim();
+        const dropdown = document.getElementById('foodDropdown');
+        
+        if (query.length < 2) {
+            dropdown.style.display = 'none';
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/food-search?q=${encodeURIComponent(query)}`);
+            const foods = await response.json();
+            
+            dropdown.innerHTML = foods.map((food) => {
+                const esc = (s) => String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+                return `<div class="dropdown-item" data-name="${esc(food.food_name)}" data-calories="${food.calories}" data-protein="${food.protein}" data-carbs="${food.carbs}" data-fat="${food.fat}">
+                    ${food.food_name}
+                    <span class="food-calories">${Math.round(food.calories)} kcal</span>
+                </div>`;
+            }).join('');
+            dropdown.querySelectorAll('.dropdown-item').forEach(el => {
+                el.addEventListener('click', () => {
+                    const name = el.dataset.name.replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&amp;/g,'&');
+                    selectFood(name, parseFloat(el.dataset.calories), parseFloat(el.dataset.protein), parseFloat(el.dataset.carbs), parseFloat(el.dataset.fat));
+                });
+            });
+            dropdown.style.display = foods.length > 0 ? 'block' : 'none';
+        } catch (error) {
+            console.error('Error searching foods:', error);
+        }
+    });
+    document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('foodDropdown');
+        const searchWrap = document.querySelector('.search-wrapper');
+        if (searchWrap && !searchWrap.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+    
+    function selectFood(name, calories, protein, carbs, fat) {
+        selectedFood = { name, calories, protein, carbs, fat };
+        
+        document.getElementById('foodSearch').value = name;
+        document.getElementById('selectedFood').style.display = 'block';
+        document.getElementById('foodDropdown').style.display = 'none';
+        document.getElementById('selectedFoodName').textContent = name;
+        document.getElementById('selectedCalories').textContent = Math.round(calories);
+        document.getElementById('selectedProtein').textContent = Math.round(protein);
+        document.getElementById('selectedCarbs').textContent = Math.round(carbs);
+        document.getElementById('selectedFat').textContent = Math.round(fat);
+    }
+    
+    // Add food to diet
+    document.getElementById('addFoodBtn').addEventListener('click', async () => {
+        if (!selectedFood) return;
+        
+        try {
+            const response = await fetch('/api/add-diet', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    food_name: selectedFood.name,
+                    meal_type: document.getElementById('mealType').value,
+                    calories: selectedFood.calories,
+                    protein: selectedFood.protein,
+                    carbs: selectedFood.carbs,
+                    fats: selectedFood.fat
+                })
+            });
+            
+            if (response.ok) {
+                document.getElementById('foodSearch').value = '';
+                document.getElementById('selectedFood').style.display = 'none';
+                selectedFood = null;
+                loadDietLogs();
+            }
+        } catch (error) {
+            console.error('Error adding food:', error);
+        }
+    });
+    
+    async function deleteDietLog(id) {
+        if (!confirm('Delete this food item?')) return;
+        try {
+            const response = await fetch(`/api/delete-diet/${id}`, { method: 'DELETE' });
+            if (response.ok) {
+                loadDietLogs();
+            }
+        } catch (error) {
+            console.error('Error deleting diet log:', error);
+        }
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    async function loadDietLogs() {
+        try {
+            const response = await fetch('/api/diet-logs');
+            const logs = await response.json();
+            
+            const byMeal = { Breakfast: [], Lunch: [], Dinner: [], Snack: [] };
+            logs.forEach(log => {
+                if (byMeal[log.meal_type]) byMeal[log.meal_type].push(log);
+            });
+            
+            const mealIds = { Breakfast: 'breakfastList', Lunch: 'lunchList', Dinner: 'dinnerList', Snack: 'snackList' };
+            const totalIds = { Breakfast: 'breakfastTotal', Lunch: 'lunchTotal', Dinner: 'dinnerTotal', Snack: 'snackTotal' };
+            
+            for (const [meal, items] of Object.entries(byMeal)) {
+                const listEl = document.getElementById(mealIds[meal]);
+                const totalEl = document.getElementById(totalIds[meal]);
+                const mealKcal = items.reduce((s, l) => s + l.calories, 0);
+                totalEl.textContent = Math.round(mealKcal) + ' kcal';
+                
+                if (items.length === 0) {
+                    listEl.innerHTML = '<p class="no-data">No food logged</p>';
+                } else {
+                    listEl.innerHTML = items.map(log => `
+                        <div class="meal-box-item">
+                            <div class="meal-box-item-header">
+                                <strong>${escapeHtml(log.food_name)}</strong>
+                                <button class="delete-btn" onclick="deleteDietLog(${log.id})" title="Delete">✕</button>
+                            </div>
+                            <div class="meal-box-item-nutrition">
+                                <span>${Math.round(log.calories)} kcal</span>
+                                <span>P: ${Math.round(log.protein)}g</span>
+                                <span>C: ${Math.round(log.carbs)}g</span>
+                                <span>F: ${Math.round(log.fats)}g</span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+            
+            const totals = logs.reduce((acc, log) => ({
+                calories: acc.calories + log.calories,
+                protein: acc.protein + log.protein,
+                carbs: acc.carbs + log.carbs,
+                fats: acc.fats + log.fats
+            }), { calories: 0, protein: 0, carbs: 0, fats: 0 });
+            
+            document.getElementById('totalCalories').textContent = Math.round(totals.calories);
+            document.getElementById('totalProtein').textContent = Math.round(totals.protein);
+            document.getElementById('totalCarbs').textContent = Math.round(totals.carbs);
+            document.getElementById('totalFat').textContent = Math.round(totals.fats);
+        } catch (error) {
+            console.error('Error loading diet logs:', error);
+        }
+    }
+    
+    loadDietLogs();
+    setInterval(loadDietLogs, 5000);
+</script>
+{% endblock %}
